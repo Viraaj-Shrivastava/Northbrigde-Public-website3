@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Northbridge — Company Operating System</title>
+<meta name="description" content="Northbridge brings projects, people, workflows, approvals and company intelligence into one configurable workspace.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" type="image/svg+xml" href="logo-mark.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#121214">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0f11; --panel:#17171a; --panel2:#1c1c20;
+  --line:rgba(255,255,255,.09);
+  --text:#f2f2ea; --dim:#97979f; --dimmer:#59595f;
+  --lime:#c9ff4d; --pink:#ff3ea5;
+  --sans:'Space Grotesk',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+::selection{background:var(--lime);color:#0f0f11;}
+a{color:inherit;text-decoration:none;}
+:focus-visible{outline:2px solid var(--lime);outline-offset:3px;}
+.shell{max-width:1180px;margin:0 auto;padding:0 28px;}
+.mono{font-family:var(--mono);}
+img,svg{display:block;max-width:100%;}
+
+/* subtle grain instead of a repeating grid pattern */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:2;opacity:.035;mix-blend-mode:overlay;}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:20px 28px;max-width:1180px;margin:0 auto;background:rgba(15,15,17,.86);backdrop-filter:blur(10px);}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:600;font-size:14.5px;}
+.brand svg{flex-shrink:0;}
+.navlinks{display:flex;align-items:center;gap:28px;font-family:var(--mono);font-size:13px;color:var(--dim);}
+.navlinks a:not(.nav-cta):hover{color:var(--text);}
+.nav-cta{font-family:var(--mono);font-size:12.5px;color:var(--bg)!important;background:var(--lime);padding:9px 15px;border:1px solid var(--lime);transition:.15s;}
+.nav-cta:hover{background:transparent;color:var(--lime)!important;}
+.navtoggle{display:none;background:none;border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:7px 12px;font-size:12.5px;}
+
+/* HERO */
+.hero{padding:64px 0 40px;}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:52px;align-items:start;}
+.eyebrow{display:inline-block;font-family:var(--mono);font-size:12.5px;color:var(--dim);border:1px solid var(--line);padding:6px 12px;margin-bottom:26px;}
+.eyebrow b{color:var(--lime);font-weight:500;}
+h1{font-size:clamp(2.5rem,4.8vw,3.9rem);line-height:1.03;letter-spacing:-.015em;margin:0 0 24px;font-weight:600;}
+h1 b{font-weight:700;color:var(--lime);}
+.lede{font-size:17.5px;color:var(--dim);max-width:44ch;margin:0 0 30px;}
+.actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:44px;}
+.btn{font-family:var(--mono);font-size:13.5px;padding:14px 22px;border:1px solid var(--line);display:inline-block;position:relative;overflow:hidden;transition:border-color .15s;}
+.btn span{position:relative;z-index:1;}
+.btn:hover{border-color:var(--text);}
+.btn.primary{background:var(--lime);border-color:var(--lime);color:#0f0f11;font-weight:600;}
+.btn.primary:hover{background:transparent;color:var(--lime);}
+
+/* sticky-note pull quote — real content, rotated like a physical note */
+.note{
+  background:var(--pink); color:#1a0410; padding:18px 20px; max-width:340px;
+  font-family:var(--mono); font-size:12.5px; line-height:1.55;
+  transform:rotate(-2.2deg); box-shadow:0 18px 34px -14px rgba(255,62,165,.4);
+  position:relative;
+}
+.note::before{ content:'“'; position:absolute; top:-6px; left:10px; font-family:var(--sans); font-size:44px; color:rgba(0,0,0,.18); line-height:1;}
+.note b{ display:block; margin-top:8px; font-weight:600; }
+
+/* hero product panel — flat, no window chrome */
+.panel{background:var(--panel);border:1px solid var(--line);}
+.panel-tabs{display:flex;font-family:var(--mono);font-size:11.5px;color:var(--dimmer);border-bottom:1px solid var(--line);}
+.panel-tabs span{padding:12px 16px;}
+.panel-tabs span.active{color:var(--lime);border-bottom:2px solid var(--lime);margin-bottom:-1px;}
+.pbody{display:grid;grid-template-columns:120px 1fr;min-height:320px;}
+.pnav{border-right:1px solid var(--line);padding:16px 12px;font-family:var(--mono);font-size:12px;}
+.pnav a{display:block;padding:7px 0;color:var(--dim);}
+.pnav a.active{color:var(--lime);}
+.pmain{padding:18px 20px;}
+.pmain h4{margin:0 0 16px;font-size:15px;font-weight:500;}
+.pmetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.pmetric{border:1px solid var(--line);padding:9px 10px;}
+.pmetric span{display:block;font-family:var(--mono);font-size:10px;color:var(--dimmer);margin-bottom:5px;}
+.pmetric strong{font-size:17px;font-weight:600;}
+.prow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;color:var(--dim);padding:6px 0;border-top:1px dashed var(--line);}
+.prow:first-child{border-top:none;}
+.prow b{color:var(--text);font-weight:500;}
+.aichip{background:rgba(201,255,77,.08);border:1px solid rgba(201,255,77,.28);color:var(--lime);padding:8px;margin-bottom:8px;font-family:var(--mono);font-size:11px;}
+
+/* boot terminal — the one signature animated moment */
+.terminal{background:var(--panel2);border:1px solid var(--line);margin-top:20px;}
+.term-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--dimmer);}
+.term-head .d{width:8px;height:8px;border-radius:50%;background:#333338;}
+.term-head .fn{margin-left:4px;}
+.term-head .st{margin-left:auto;color:var(--lime);}
+.term-body{padding:16px 18px;font-family:var(--mono);font-size:12.5px;min-height:110px;}
+.term-body p{margin:0 0 6px;color:var(--dim);}
+.term-body .ac{color:var(--lime);}
+
+/* marquee */
+.strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--panel);}
+.strip-track{display:flex;white-space:nowrap;animation:scroll 30s linear infinite;padding:12px 0;font-family:var(--mono);font-size:12px;color:var(--dimmer);}
+.strip-track span{padding:0 20px;border-right:1px solid var(--line);}
+.strip-track b{color:var(--dim);}
+@keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+.section{padding:96px 0;}
+.eyebrow2{font-family:var(--mono);font-size:12.5px;color:var(--dimmer);margin-bottom:16px;}
+.eyebrow2 b{color:var(--pink);}
+.section h2{font-size:clamp(1.8rem,3.2vw,2.5rem);font-weight:600;letter-spacing:-.01em;margin:0 0 18px;max-width:18ch;}
+
+/* PLATFORM — asymmetric bento, not equal cards */
+.bento{display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:auto auto;gap:1px;background:var(--line);border:1px solid var(--line);}
+.btile{background:var(--bg);padding:32px;}
+.btile.big{grid-row:1 / 3;display:flex;flex-direction:column;justify-content:flex-end;min-height:340px;}
+.btile .ic{margin-bottom:20px;}
+.btile h3{font-size:19px;font-weight:600;margin:0 0 10px;}
+.btile p{color:var(--dim);font-size:14.5px;margin:0;max-width:38ch;}
+.btile.big h3{font-size:23px;}
+
+/* FLOW — hand-drawn connecting path instead of numbered circles */
+.darkband{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.flowwrap{position:relative;padding:30px 10px 10px;}
+.flowsvg{width:100%;height:70px;display:block;}
+.flowsteps{display:flex;justify-content:space-between;margin-top:-10px;}
+.fstep{font-family:var(--mono);font-size:12.5px;color:var(--dim);text-align:center;width:16%;}
+.fstep b{display:block;font-family:var(--sans);color:var(--text);font-size:14.5px;font-weight:500;margin-top:6px;}
+
+/* AI — chat bubbles, no window chrome, distinct from hero */
+.ai-layout{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center;}
+.bubbles{display:flex;flex-direction:column;gap:14px;}
+.bubble{padding:16px 18px;border:1px solid var(--line);max-width:88%;}
+.bubble.q{align-self:flex-end;background:var(--panel);font-family:var(--mono);font-size:13px;color:var(--dim);}
+.bubble.a{align-self:flex-start;background:transparent;border-color:var(--lime);}
+.bubble.a small{font-family:var(--mono);color:var(--dimmer);font-size:10.5px;}
+.bubble.a h4{margin:6px 0;font-size:16px;font-weight:600;}
+.bubble.a p{margin:0;color:var(--dim);font-size:13.5px;line-height:1.6;}
+
+/* manifesto — single column, breaks the grid pattern */
+.manifesto{max-width:64ch;}
+.manifesto p{font-size:19px;line-height:1.6;color:var(--dim);margin:0 0 20px;}
+.manifesto p b{color:var(--text);font-weight:600;}
+
+.cta{padding:110px 0;border-top:1px solid var(--line);}
+.cta h2{max-width:none;font-size:clamp(2.1rem,4.4vw,3rem);margin-bottom:20px;}
+.cta p{color:var(--dim);max-width:52ch;margin:0 0 32px;font-size:16px;}
+
+footer{border-top:1px solid var(--line);padding:26px 0 40px;}
+.foot{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;color:var(--dimmer);flex-wrap:wrap;gap:10px;}
+
+@media (max-width:900px){
+  .nav{padding:16px 20px;}
+  .navlinks{position:fixed;inset:60px 0 auto 0;background:var(--bg);flex-direction:column;align-items:flex-start;padding:20px;border-bottom:1px solid var(--line);gap:16px;opacity:0;transform:translateY(-8px);pointer-events:none;transition:.15s;}
+  .navlinks.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+  .navtoggle{display:block;}
+  .hero-grid{grid-template-columns:1fr;}
+  .pbody{grid-template-columns:1fr;}
+  .pnav{display:none;}
+  .bento{grid-template-columns:1fr;}
+  .btile.big{grid-row:auto;min-height:auto;}
+  .ai-layout{grid-template-columns:1fr;}
+  .flowsteps{flex-wrap:wrap;}
+  .fstep{width:30%;margin-bottom:14px;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important;}
+  .strip-track{animation:none;}
+}
+</style>
+</head>
+<body>
+
+<svg class="grain" width="0" height="0">
+  <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter>
+</svg>
+<div class="grain" style="filter:url(#n)"></div>
+
+<div class="nav">
+  <a class="brand" href="index.html">
+    <svg width="34" height="34" viewBox="0 0 128 128" fill="none" aria-hidden="true">
+      <rect width="128" height="128" rx="28" fill="#121214"/>
+      <rect x="30" y="40" width="13" height="54" rx="6.5" fill="#C9FF4D"/>
+      <rect x="85" y="40" width="13" height="54" rx="6.5" fill="#C9FF4D"/>
+      <rect x="26" y="88" width="76" height="11" rx="5.5" fill="#C9FF4D"/>
+      <path d="M37 46C37 30 50 20 64 20C78 20 91 30 91 46" stroke="#C9FF4D" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="64" cy="20" r="7.5" fill="#FF3EA5"/>
+    </svg>
+    NORTHBRIDGE
+  </a>
+  <div class="navlinks" id="navlinks">
+    <a href="#platform">platform</a>
+    <a href="ai.html">ai</a>
+    <a href="pricing.html">pricing</a>
+    <a href="company.html">company</a>
+    <a href="contact.html">contact</a>
+    <a class="nav-cta" href="contact.html">request a demo</a>
+  </div>
+  <button class="navtoggle" id="navtoggle">menu</button>
+</div>
+
+<section class="hero">
+  <div class="shell hero-grid">
+    <div>
+      <div class="eyebrow">for teams still tracking projects across <b>six different tabs</b></div>
+      <h1>Stop asking five people<br>where an order <b>went.</b></h1>
+      <p class="lede">Northbridge brings your projects, people, workflows and approvals into one workspace — configured around how your company already runs, not the other way around.</p>
+      <div class="actions">
+        <a class="btn primary" href="contact.html"><span>Request a demo</span></a>
+        <a class="btn" href="#platform"><span>See how it works</span></a>
+      </div>
+      <div class="note">
+        When a customer asks where their order is, how many people do you have to ask before you can answer?
+        <b>— the question we built Northbridge to fix</b>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-tabs"><span class="active">workspace</span><span>connected</span></div>
+        <div class="pbody">
+          <nav class="pnav">
+            <a class="active">overview</a><a>projects</a><a>people</a><a>workflows</a><a>approvals</a><a>activity</a>
+          </nav>
+          <div class="pmain">
+            <h4>Good morning, Jack.</h4>
+            <div class="pmetrics">
+              <div class="pmetric"><span>active</span><strong>34</strong></div>
+              <div class="pmetric"><span>approvals</span><strong>7</strong></div>
+              <div class="pmetric"><span>tasks</span><strong>126</strong></div>
+            </div>
+            <div class="aichip">3 items need attention based on your authorized data.</div>
+            <div class="prow"><span>hosted backend</span><b>in progress</b></div>
+            <div class="prow"><span>pilot setup</span><b>review</b></div>
+            <div class="prow"><span>permissions</span><b>testing</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="terminal">
+        <div class="term-head"><span class="d"></span><span class="d"></span><span class="d"></span><span class="fn">boot.sh</span><span class="st" id="bootstatus">running</span></div>
+        <div class="term-body" id="bootbody"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="strip">
+  <div class="strip-track">
+    <span>projects <b>connected</b></span><span>permissions <b>verified</b></span><span>workflows <b>active</b></span><span>approvals <b>tracked</b></span><span>activity <b>logged</b></span>
+    <span>projects <b>connected</b></span><span>permissions <b>verified</b></span><span>workflows <b>active</b></span><span>approvals <b>tracked</b></span><span>activity <b>logged</b></span>
+  </div>
+</div>
+
+<section class="section" id="platform">
+  <div class="shell">
+    <div class="eyebrow2">// platform</div>
+    <h2>One operating layer for the company.</h2>
+    <p class="lede" style="margin-bottom:40px;">No new operating model to learn — set up departments, roles and workflows around how your company already works.</p>
+    <div class="bento">
+      <div class="btile big">
+        <div class="ic"><svg width="34" height="34" viewBox="0 0 34 34" fill="none"><circle cx="9" cy="9" r="4" stroke="#c9ff4d" stroke-width="1.6"/><circle cx="25" cy="9" r="4" stroke="#c9ff4d" stroke-width="1.6"/><circle cx="17" cy="25" r="4" stroke="#c9ff4d" stroke-width="1.6"/><path d="M12 11L15 22M22 11L19 22M13 9H21" stroke="#c9ff4d" stroke-width="1.2" opacity=".5"/></svg></div>
+        <h3>People &amp; permissions</h3>
+        <p>Give each person the right view of the same company workspace — CEO, ops, field teams, everyone sees exactly what they need to.</p>
+      </div>
+      <div class="btile">
+        <div class="ic"><svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M4 15L11 22L26 6" stroke="#ff3ea5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Projects &amp; workflows</h3>
+        <p>Track work from project to task to approval, with a clear activity trail behind every number.</p>
+      </div>
+      <div class="btile">
+        <div class="ic"><svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M6 8H24V20H12L6 25V20H6V8Z" stroke="#c9ff4d" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="14" r="1.4" fill="#c9ff4d"/><circle cx="15" cy="14" r="1.4" fill="#c9ff4d"/><circle cx="18" cy="14" r="1.4" fill="#c9ff4d"/></svg></div>
+        <h3>Northbridge AI</h3>
+        <p>Ask what changed and get an answer built only from records you're authorized to see.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section darkband">
+  <div class="shell">
+    <div class="eyebrow2">// <b>operating flow</b></div>
+    <h2>From work happening to work understood.</h2>
+    <p class="lede" style="margin-bottom:10px;">Activity becomes records. Records get permissions and workflows. Workflows become dashboards Northbridge AI can explain.</p>
+    <div class="flowwrap">
+      <svg class="flowsvg" viewBox="0 0 1120 70" preserveAspectRatio="none">
+        <path d="M20 50 Q 200 10, 380 45 T 740 40 T 1100 50" fill="none" stroke="#ff3ea5" stroke-width="1.5" stroke-dasharray="3 6" opacity=".55"/>
+        <circle cx="20" cy="50" r="5" fill="#c9ff4d"/>
+        <circle cx="240" cy="27" r="5" fill="#c9ff4d"/>
+        <circle cx="460" cy="47" r="5" fill="#c9ff4d"/>
+        <circle cx="680" cy="35" r="5" fill="#c9ff4d"/>
+        <circle cx="900" cy="42" r="5" fill="#c9ff4d"/>
+        <circle cx="1100" cy="50" r="5" fill="#c9ff4d"/>
+      </svg>
+      <div class="flowsteps">
+        <div class="fstep">01<b>Activity</b></div>
+        <div class="fstep">02<b>Records</b></div>
+        <div class="fstep">03<b>Permissions</b></div>
+        <div class="fstep">04<b>Workflows</b></div>
+        <div class="fstep">05<b>Dashboards</b></div>
+        <div class="fstep">06<b>AI explains</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="shell ai-layout">
+    <div>
+      <div class="eyebrow2">// <b>northbridge ai</b></div>
+      <h2>Ask what's happening.<br>Get the context.</h2>
+      <p class="lede">Northbridge AI only retrieves records the signed-in user is allowed to access, then explains what changed and what needs attention — nothing invented, nothing outside your permissions.</p>
+      <div class="actions" style="margin-top:26px;"><a class="btn" href="ai.html"><span>Explore Northbridge AI</span></a></div>
+    </div>
+    <div class="bubbles">
+      <div class="bubble q">what should I focus on today?</div>
+      <div class="bubble a">
+        <small>executive brief</small>
+        <h4>Three things need attention.</h4>
+        <p>Two approvals are overdue, one workflow is blocked, and a project milestone is approaching.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section darkband">
+  <div class="shell manifesto">
+    <div class="eyebrow2">// <b>why we're building this</b></div>
+    <p><b>Most companies don't have a software problem.</b> They have five different tools that don't talk to each other, and a person whose whole job is being the human API between them.</p>
+    <p>Northbridge isn't asking your company to change how it works. It's one workspace, configured around your departments and workflows, that finally gives everyone — from the CEO to the newest hire — <b>the same source of truth.</b></p>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="shell">
+    <div class="eyebrow2">// <b>start here</b></div>
+    <h2>Show us how your company works.</h2>
+    <p>We'll shape Northbridge around your departments, workflows, permissions and project structure — not the other way around.</p>
+    <a class="btn primary" href="contact.html"><span>Request a demo</span></a>
+  </div>
+</section>
+
+<footer>
+  <div class="shell foot">
+    <div>© 2026 northbridge</div>
+    <div>built by two people who got tired of bad internal tools.</div>
+  </div>
+</footer>
+
+<script>
+const navtoggle=document.getElementById('navtoggle');
+const navlinks=document.getElementById('navlinks');
+navtoggle&&navtoggle.addEventListener('click',()=>navlinks.classList.toggle('open'));
+
+const bootLines=[
+  {text:'northbridge init --company',ac:true},
+  {text:'loading departments... done'},
+  {text:'loading permissions... done'},
+  {text:'loading workflows... done'},
+  {text:'northbridge is ready.'}
+];
+const bootbody=document.getElementById('bootbody');
+const bootstatus=document.getElementById('bootstatus');
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function renderStatic(){
+  bootbody.innerHTML=bootLines.map(l=>`<p>${l.ac?'<span class="ac">$</span> ':''}${l.text}</p>`).join('');
+  bootstatus.textContent='ready';
+}
+if(reduced){renderStatic();}
+else{
+  let i=0;
+  function typeLine(){
+    if(i>=bootLines.length){bootstatus.textContent='ready';return;}
+    const l=bootLines[i];
+    const p=document.createElement('p');
+    bootbody.appendChild(p);
+    const prefix=l.ac?'$ ':'';
+    const full=prefix+l.text;
+    let chars=0;
+    const iv=setInterval(()=>{
+      chars++;
+      p.textContent=full.slice(0,chars);
+      if(chars>=full.length){
+        clearInterval(iv);
+        if(l.ac) p.innerHTML='<span class="ac">$</span> '+l.text;
+        i++;
+        setTimeout(typeLine,200);
+      }
+    },14);
+  }
+  typeLine();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 80" fill="none">
+  <g transform="translate(0,-4)">
+    <rect width="88" height="88" rx="20" fill="#121214"/>
+    <rect x="20.6" y="27.5" width="9" height="37" rx="4.5" fill="#C9FF4D"/>
+    <rect x="58.4" y="27.5" width="9" height="37" rx="4.5" fill="#C9FF4D"/>
+    <rect x="17.9" y="60.5" width="52.2" height="7.6" rx="3.8" fill="#C9FF4D"/>
+    <path d="M25.4 31.6C25.4 20.6 34.4 13.7 44 13.7C53.6 13.7 62.6 20.6 62.6 31.6" stroke="#C9FF4D" stroke-width="6.9" stroke-linecap="round"/>
+    <circle cx="44" cy="13.7" r="5.2" fill="#FF3EA5"/>
+  </g>
+  <text x="104" y="47" font-family="Space Grotesk, sans-serif" font-size="30" font-weight="600" letter-spacing="0.5" fill="#F2F2EA">NORTHBRIDGE</text>
+</svg>
